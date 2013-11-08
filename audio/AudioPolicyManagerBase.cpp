@@ -592,6 +592,7 @@ audio_io_handle_t AudioPolicyManagerBase::getOutput(AudioSystem::stream_type str
     // in the background.
     IOProfile *profile = NULL;
     if (((flags & AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD) == 0) ||
+            (flags & AUDIO_OUTPUT_FLAG_DIRECT) ||
             !isNonOffloadableEffectEnabled()) {
         profile = getProfileForDirectOutput(device,
                                            samplingRate,
