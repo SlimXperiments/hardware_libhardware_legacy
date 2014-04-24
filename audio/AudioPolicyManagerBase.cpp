@@ -33,13 +33,16 @@
 // active output devices in isStreamActiveRemotely()
 #define APM_AUDIO_OUT_DEVICE_REMOTE_ALL  AUDIO_DEVICE_OUT_REMOTE_SUBMIX
 
-#include <utils/Log.h>
-#include <hardware_legacy/AudioPolicyManagerBase.h>
-#include <hardware/audio_effect.h>
-#include <hardware/audio.h>
+#include <inttypes.h>
 #include <math.h>
-#include <hardware_legacy/audio_policy_conf.h>
+
 #include <cutils/properties.h>
+#include <utils/Log.h>
+
+#include <hardware/audio.h>
+#include <hardware/audio_effect.h>
+#include <hardware_legacy/audio_policy_conf.h>
+#include <hardware_legacy/AudioPolicyManagerBase.h>
 
 namespace android_audio_legacy {
 
@@ -96,7 +99,7 @@ status_t AudioPolicyManagerBase::setDeviceConnectionState(audio_devices_t device
             if (checkOutputsForDevice(device, state, outputs) != NO_ERROR) {
                 return INVALID_OPERATION;
             }
-            ALOGV("setDeviceConnectionState() checkOutputsForDevice() returned %d outputs",
+            ALOGV("setDeviceConnectionState() checkOutputsForDevice() returned %zu outputs",
                   outputs.size());
             // register new device as available
             mAvailableOutputDevices = (audio_devices_t)(mAvailableOutputDevices | device);
@@ -1180,7 +1183,7 @@ audio_io_handle_t AudioPolicyManagerBase::selectOutputForEffects(
 
     for (size_t i = 0; i < outputs.size(); i++) {
         AudioOutputDescriptor *desc = mOutputs.valueFor(outputs[i]);
-        ALOGV("selectOutputForEffects outputs[%d] flags %x", i, desc->mFlags);
+        ALOGV("selectOutputForEffects outputs[%zu] flags %x", i, desc->mFlags);
         if ((desc->mFlags & AUDIO_OUTPUT_FLAG_COMPRESS_OFFLOAD) != 0) {
             outputOffloaded = outputs[i];
         }
@@ -1413,7 +1416,7 @@ status_t AudioPolicyManagerBase::dump(int fd)
     snprintf(buffer, SIZE, "\nHW Modules dump:\n");
     write(fd, buffer, strlen(buffer));
     for (size_t i = 0; i < mHwModules.size(); i++) {
-        snprintf(buffer, SIZE, "- HW Module %d:\n", i + 1);
+        snprintf(buffer, SIZE, "- HW Module %zu:\n", i + 1);
         write(fd, buffer, strlen(buffer));
         mHwModules[i]->dump(fd);
     }
@@ -1440,7 +1443,7 @@ status_t AudioPolicyManagerBase::dump(int fd)
              " Stream  Can be muted  Index Min  Index Max  Index Cur [device : index]...\n");
     write(fd, buffer, strlen(buffer));
     for (size_t i = 0; i < AudioSystem::NUM_STREAM_TYPES; i++) {
-        snprintf(buffer, SIZE, " %02d      ", i);
+        snprintf(buffer, SIZE, " %02zu      ", i);
         write(fd, buffer, strlen(buffer));
         mStreams[i].dump(fd);
     }
@@ -1467,7 +1470,7 @@ status_t AudioPolicyManagerBase::dump(int fd)
 bool AudioPolicyManagerBase::isOffloadSupported(const audio_offload_info_t& offloadInfo)
 {
     ALOGV("isOffloadSupported: SR=%u, CM=0x%x, Format=0x%x, StreamType=%d,"
-     " BitRate=%u, duration=%lld us, has_video=%d",
+     " BitRate=%u, duration=%" PRId64 " us, has_video=%d",
      offloadInfo.sample_rate, offloadInfo.channel_mask,
      offloadInfo.format,
      offloadInfo.stream_type, offloadInfo.bit_rate, offloadInfo.duration_us,
@@ -1869,7 +1872,7 @@ status_t AudioPolicyManagerBase::checkOutputsForDevice(audio_devices_t device,
             for (size_t j = 0; j < mHwModules[i]->mOutputProfiles.size(); j++)
             {
                 if (mHwModules[i]->mOutputProfiles[j]->mSupportedDevices & device) {
-                    ALOGV("checkOutputsForDevice(): adding profile %d from module %d", j, i);
+                    ALOGV("checkOutputsForDevice(): adding profile %zu from module %zu", j, i);
                     profiles.add(mHwModules[i]->mOutputProfiles[j]);
                 }
             }
@@ -2026,7 +2029,7 @@ status_t AudioPolicyManagerBase::checkOutputsForDevice(audio_devices_t device,
                 IOProfile *profile = mHwModules[i]->mOutputProfiles[j];
                 if ((profile->mSupportedDevices & device) &&
                         (profile->mFlags & AUDIO_OUTPUT_FLAG_DIRECT)) {
-                    ALOGV("checkOutputsForDevice(): clearing direct output profile %d on module %d",
+                    ALOGV("checkOutputsForDevice(): clearing direct output profile %zu on module %zu",
                           j, i);
                     if (profile->mSamplingRates[0] == 0) {
                         profile->mSamplingRates.clear();
@@ -3559,7 +3562,7 @@ void AudioPolicyManagerBase::HwModule::dump(int fd)
     if (mOutputProfiles.size()) {
         write(fd, "  - outputs:\n", sizeof("  - outputs:\n"));
         for (size_t i = 0; i < mOutputProfiles.size(); i++) {
-            snprintf(buffer, SIZE, "    output %d:\n", i);
+            snprintf(buffer, SIZE, "    output %zu:\n", i);
             write(fd, buffer, strlen(buffer));
             mOutputProfiles[i]->dump(fd);
         }
@@ -3567,7 +3570,7 @@ void AudioPolicyManagerBase::HwModule::dump(int fd)
     if (mInputProfiles.size()) {
         write(fd, "  - inputs:\n", sizeof("  - inputs:\n"));
         for (size_t i = 0; i < mInputProfiles.size(); i++) {
-            snprintf(buffer, SIZE, "    input %d:\n", i);
+            snprintf(buffer, SIZE, "    input %zu:\n", i);
             write(fd, buffer, strlen(buffer));
             mInputProfiles[i]->dump(fd);
         }
